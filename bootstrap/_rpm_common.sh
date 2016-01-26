@@ -3,6 +3,7 @@
 # Tested with:
 #   - Fedora 22, 23 (x64)
 #   - Centos 7 (x64: on DigitalOcean droplet)
+#   - CentOS 7 Minimal install in a Hyper-V VM
 
 if type dnf 2>/dev/null
 then
@@ -21,21 +22,23 @@ fi
 if ! $tool install -y \
        python \
        python-devel \
-       python-virtualenv
+       python-virtualenv \
+       python-tools \
+       python-pip
 then
   if ! $tool install -y \
          python27 \
          python27-devel \
-         python27-virtualenv
+         python27-virtualenv \
+         python27-tools \
+         python27-pip
   then
     echo "Could not install Python dependencies. Aborting bootstrap!"
     exit 1
   fi
 fi
 
-# "git-core" seems to be an alias for "git" in CentOS 7 (yum search fails)
 if ! $tool install -y \
-       git-core \
        gcc \
        dialog \
        augeas-libs \
@@ -46,4 +49,12 @@ if ! $tool install -y \
 then
     echo "Could not install additional dependencies. Aborting bootstrap!"
     exit 1
+fi
+
+
+if $tool list installed "httpd" >/dev/null 2>&1; then
+  if ! $tool install -y mod_ssl
+  then
+    echo "Apache found, but mod_ssl could not be installed."
+  fi
 fi
